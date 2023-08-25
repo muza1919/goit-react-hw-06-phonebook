@@ -1,8 +1,9 @@
 import { Formik, ErrorMessage } from 'formik';
-import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
 import * as yup from 'yup';
 import { FormButton, StyledField, StyledForm } from './Form.styled';
-
+import { getContacts } from 'redux/selectors';
+import { addContact } from 'redux/contactsSlice';
 
 const schema = yup.object().shape({
   name: yup
@@ -31,17 +32,25 @@ const initialValues = {
   number: '',
 };
 
+export const ContactForm = () => {
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
 
+  const handleSubmit = (values, { resetForm }) => {
+    const checkedContact = contacts.find(
+      contact => contact.name.toLowerCase() === values.name.toLowerCase()
+    );
 
-export const ContactForm = ({ onFormSubmit }) => {
-  const handleSubmit = (newContact, { resetForm }) => {
-    onFormSubmit(newContact, { resetForm }); 
-  
-  resetForm({ 
-    name: '',
-    number: '',
-  });
-};
+    if (checkedContact) {
+      alert(`${values.name} is alredy added`);
+      return;
+    }
+    dispatch(addContact(values));
+    resetForm({
+      name: '',
+      number: '',
+    });
+  };
 
   return (
     <Formik
@@ -64,8 +73,4 @@ export const ContactForm = ({ onFormSubmit }) => {
       </StyledForm>
     </Formik>
   );
-};
-
-ContactForm.propTypes = {
-  onFormSubmit: PropTypes.func.isRequired,
 };
